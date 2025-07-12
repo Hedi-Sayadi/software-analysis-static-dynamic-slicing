@@ -54,6 +54,14 @@ public class ControlDependenceGraph extends Graph {
           }
       }
     }
+
+    //In the lecture slides, the final step of constructing the CDG is to mark all nodes that are not yet control dependent to be dependent on the entry node
+    Node entryNode = cfg.getEntry().orElseThrow(() -> new IllegalStateException("There is no entry node"));
+    for (Node node : controlDependenceGraph.getNodes()) {
+      if (!node.equals(entryNode) && !controlDependenceGraph.getPredecessors(node).isEmpty()) {
+        controlDependenceGraph.addEdge(entryNode, node);
+      }
+    }
       return controlDependenceGraph;
   }
   // check whether a node node is post-dominated by postDom in the postDominatorTree

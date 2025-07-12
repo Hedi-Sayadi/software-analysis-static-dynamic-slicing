@@ -1,7 +1,12 @@
 package de.uni_passau.fim.se2.sa.slicing.graph;
 
+import br.usp.each.saeg.asm.defuse.DefUseAnalyzer;
+import br.usp.each.saeg.asm.defuse.DefUseFrame;
 import br.usp.each.saeg.asm.defuse.Variable;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.analysis.AnalyzerException;
@@ -23,7 +28,12 @@ class DataFlowAnalysis {
   static Collection<Variable> usedBy(
       String pOwningClass, MethodNode pMethodNode, AbstractInsnNode pInstruction)
       throws AnalyzerException {
-    throw new UnsupportedOperationException("Implement me");
+    DefUseAnalyzer analyzer = new DefUseAnalyzer();
+    analyzer.analyze(pOwningClass, pMethodNode);
+    DefUseFrame[] frames = analyzer.getDefUseFrames();
+    int instructionIndex = pMethodNode.instructions.indexOf(pInstruction);
+    DefUseFrame frame = frames[instructionIndex];
+    return frame.getUses();
   }
 
   /**
@@ -38,6 +48,13 @@ class DataFlowAnalysis {
   static Collection<Variable> definedBy(
       String pOwningClass, MethodNode pMethodNode, AbstractInsnNode pInstruction)
       throws AnalyzerException {
-    throw new UnsupportedOperationException("Implement me");
+    DefUseAnalyzer analyzer = new DefUseAnalyzer();
+    analyzer.analyze(pOwningClass, pMethodNode);
+    DefUseFrame[] frames = analyzer.getDefUseFrames();
+    int instructionIndex = pMethodNode.instructions.indexOf(pInstruction);
+    DefUseFrame frame = frames[instructionIndex];
+    return frame.getDefinitions();
   }
+
+
 }

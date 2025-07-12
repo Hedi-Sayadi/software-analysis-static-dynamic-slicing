@@ -43,7 +43,7 @@ public class ControlDependenceGraph extends Graph {
       for (Node to : cfg.getSuccessors(from)) {
         // If 'from' does not post-dominate 'to', then 'to' is control dependent on 'from'
           if (!isPostDominated(to, from, postDominatorTree)) {
-            // Walk up the PDT from 'to' until the least common ancestor (LCA) with 'from'
+            // Walk up the PDT from 'to' until the least common ancestor with 'from'
             Node lca = postDominatorTree.getLeastCommonAncestor(from, to);
             Node current = to;
             while (!current.equals(lca)) {
@@ -51,18 +51,13 @@ public class ControlDependenceGraph extends Graph {
               Collection<Node> predecessors= postDominatorTree.getPredecessors(current);
               current = predecessors.iterator().next();  //Move up one level in PDT : help of llm
             }
+            if (from.equals(lca)) {
+              controlDependenceGraph.addEdge(from, from); //when we have a while case for exp
+            }
           }
       }
     }
-
-    //In the lecture slides, the final step of constructing the CDG is to mark all nodes that are not yet control dependent to be dependent on the entry node
-    Node entryNode = cfg.getEntry().orElseThrow(() -> new IllegalStateException("There is no entry node"));
-    for (Node node : controlDependenceGraph.getNodes()) {
-      if (!node.equals(entryNode) && !controlDependenceGraph.getPredecessors(node).isEmpty()) {
-        controlDependenceGraph.addEdge(entryNode, node);
-      }
-    }
-      return controlDependenceGraph;
+    return controlDependenceGraph;
   }
   // check whether a node node is post-dominated by postDom in the postDominatorTree
   private boolean isPostDominated(Node postDominator, Node node, ProgramGraph postDominatorTree) {

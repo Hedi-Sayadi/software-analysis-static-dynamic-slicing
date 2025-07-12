@@ -1,8 +1,13 @@
 package de.uni_passau.fim.se2.sa.slicing.graph;
 
+import de.uni_passau.fim.se2.sa.slicing.cfg.Node;
 import de.uni_passau.fim.se2.sa.slicing.cfg.ProgramGraph;
+import org.checkerframework.checker.units.qual.N;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
+
+import java.util.Collection;
+import java.util.Set;
 
 public class ControlDependenceGraph extends Graph {
 
@@ -24,7 +29,37 @@ public class ControlDependenceGraph extends Graph {
    */
   @Override
   public ProgramGraph computeResult() {
-    // TODO Implement me
-    throw new UnsupportedOperationException("Implement me");
+    //Slide 78 course 4_Controlflow
+    PostDominatorTree postDominatorTreeInstance = new PostDominatorTree(cfg);
+    ProgramGraph postDominatorTree = postDominatorTreeInstance.computeResult();
+
+    ProgramGraph controlDependenceGraph = new ProgramGraph();
+    for (Node node : cfg.getNodes()) {
+      controlDependenceGraph.addNode(node);
+    }
+
+  //For every edge A -> B in CFG, check control dependence
+    for(Node from : cfg.getNodes()){
+      for (Node to : cfg.getSuccessors(from)) {
+        // If 'from' does not post-dominate 'to', then 'to' is control dependent on 'from'
+          if (!isPostDominated(to, from, postDominatorTree)) {
+            // Walk up the PDT from 'to' until the least common ancestor (LCA) with 'from'
+            Node lca = postDominatorTree.getLeastCommonAncestor(from, to);
+            Node current = to;
+            while (!current.equals(lca)) {
+              controlDependenceGraph.addEdge(from, current);
+              Collection<Node> predecessors= postDominatorTree.getPredecessors(current);
+              current = predecessors.iterator().next();  //Move up one level in PDT : help of llm
+            }
+          }
+      }
+    }
+      return controlDependenceGraph;
+  }
+  // check whether a node node is post-dominated by postDom in the postDominatorTree
+  private boolean isPostDominated(Node postDominator, Node node, ProgramGraph postDominatorTree) {
+    Collection<Node> transitiveSuccessors = postDominatorTree.getTransitiveSuccessors(postDominator);
+    return transitiveSuccessors.contains(node) || postDominator.equals(node);
+
   }
 }

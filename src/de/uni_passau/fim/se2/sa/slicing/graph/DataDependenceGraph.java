@@ -38,19 +38,19 @@ public class DataDependenceGraph extends Graph {
   @Override
   public ProgramGraph computeResult() {
     ProgramGraph ddg = new ProgramGraph();
-    for (Node node : cfg.getNodes()) {
-      ddg.addNode(node);
-    }
-
-    Map<Node, Set<Variable>> GEN = computeGenSets(cfg);
-    Map<Node, Set<Variable>> KILL = computeKillSets(cfg, GEN);
-
-    Map<Node, Set<Variable>> IN = new HashMap<>();
-    Map<Node, Set<Variable>> OUT = new HashMap<>();
-    initializeInOut(cfg, GEN, IN, OUT);
-    computeReachingDefinitions(cfg, GEN, KILL, IN, OUT);
-
-    addDataDependenceEdges(cfg, ddg, GEN, IN);
+//    for (Node node : cfg.getNodes()) {
+//      ddg.addNode(node);
+//    }
+//
+//    Map<Node, Set<Variable>> GEN = computeGenSets(cfg);
+//    Map<Node, Set<Variable>> KILL = computeKillSets(cfg, GEN);
+//
+//    Map<Node, Set<Variable>> IN = new HashMap<>();
+//    Map<Node, Set<Variable>> OUT = new HashMap<>();
+//    initializeInOut(cfg, GEN, IN, OUT);
+//    computeReachingDefinitions(cfg, GEN, KILL, IN, OUT);
+//
+//    addDataDependenceEdges(cfg, ddg, GEN, IN);
     return ddg;
 
   }

@@ -43,8 +43,25 @@ public class ProgramDependenceGraph extends Graph implements Sliceable<Node> {
    */
   @Override
   public ProgramGraph computeResult() {
-    ProgramGraph pdg = new ProgramGraph();
-    throw new UnsupportedOperationException("Implement me");
+    pdg = new ProgramGraph();
+    for (Node node : ddg.getNodes()) {
+      pdg.addNode(node);
+    }
+    for (Node node : cdg.getNodes()) {
+      pdg.addNode(node);
+    }
+    for (Node node : ddg.getNodes()) {
+      for (Node target : ddg.getSuccessors(node)) {
+        pdg.addEdge(node, target);
+      }
+    }
+    for (Node node : cdg.getNodes()) {
+      for (Node target : cdg.getSuccessors(node)) {
+        pdg.addEdge(node, target);
+      }
+    }
+
+    return pdg;
   }
 
   /** {@inheritDoc} */

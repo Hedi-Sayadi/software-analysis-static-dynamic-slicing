@@ -43,7 +43,7 @@ public class ProgramDependenceGraph extends Graph implements Sliceable<Node> {
    */
   @Override
   public ProgramGraph computeResult() {
-    // TODO Implement me
+    ProgramGraph pdg = new ProgramGraph();
     throw new UnsupportedOperationException("Implement me");
   }
 

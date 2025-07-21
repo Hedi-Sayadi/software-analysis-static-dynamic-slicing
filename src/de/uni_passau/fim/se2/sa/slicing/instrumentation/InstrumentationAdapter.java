@@ -5,6 +5,9 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 
+import static org.objectweb.asm.Opcodes.INVOKESTATIC;
+
+
 class InstrumentationAdapter extends ClassVisitor {
 
   InstrumentationAdapter(int pAPI, ClassWriter pClassWriter) {
@@ -18,8 +21,14 @@ class InstrumentationAdapter extends ClassVisitor {
     return new MethodVisitor(api, mv) {
       @Override
       public void visitLineNumber(int pLine, Label pStart) {
-        // TODO Implement me
-        throw new UnsupportedOperationException("Implement me");
+        visitLdcInsn(pLine);
+        visitMethodInsn(
+                INVOKESTATIC,
+                "de/uni_passau/fim/se2/sa/slicing/coverage/CoverageTracker.java",
+                "trackLineVisit",
+                "(I)V",
+                false
+        );
       }
     };
   }

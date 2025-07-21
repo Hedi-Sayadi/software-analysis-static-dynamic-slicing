@@ -45,8 +45,8 @@ public class DataDependenceGraph extends Graph {
     Map<Node, Set<Variable>> GEN = computeGenSets(cfg);
     Map<Node, Set<Variable>> KILL = computeKillSets(cfg, GEN);
 
-    Map<Node, Set<Variable>> IN = new HashMap<>();
-    Map<Node, Set<Variable>> OUT = new HashMap<>();
+    Map<Node, Set<Map.Entry<Node, Variable>>> IN = new HashMap<>();
+    Map<Node, Set<Map.Entry<Node, Variable>>> OUT = new HashMap<>();
     initializeInOut(cfg, GEN, IN, OUT);
     computeReachingDefinitions(cfg, GEN, KILL, IN, OUT);
 
@@ -104,35 +104,51 @@ public class DataDependenceGraph extends Graph {
     return kill;
   }
 
-  private void initializeInOut(ProgramGraph cfg, Map<Node, Set<Variable>> GEN, Map<Node, Set<Variable>> IN, Map<Node, Set<Variable>> OUT) {
+  private void initializeInOut(ProgramGraph cfg, Map<Node, Set<Variable>> GEN, Map<Node, Set<Map.Entry<Node, Variable>>> IN, Map<Node, Set<Map.Entry<Node, Variable>>> OUT) {
     for (Node node : cfg.getNodes()) {
       IN.put(node, new HashSet<>());
-      OUT.put(node, new HashSet<>(GEN.getOrDefault(node, Set.of())));
+
+      Set<Map.Entry<Node, Variable>> genEntries = new HashSet<>();
+      for (Variable var : GEN.getOrDefault(node, Set.of())) {
+        genEntries.add(Map.entry(node, var));
+      }
+
+      OUT.put(node, genEntries);
     }
   }
 
 
-  private void computeReachingDefinitions(ProgramGraph cfg, Map<Node, Set<Variable>> GEN, Map<Node, Set<Variable>> KILL, Map<Node, Set<Variable>> IN, Map<Node, Set<Variable>> OUT) {
+  private void computeReachingDefinitions(ProgramGraph cfg, Map<Node, Set<Variable>> GEN, Map<Node, Set<Variable>> KILL, Map<Node, Set<Map.Entry<Node, Variable>>> IN, Map<Node, Set<Map.Entry<Node, Variable>>> OUT) {
    //help of an llm
     boolean changed;
     do {
       changed = false;
 
       for (Node node : cfg.getNodes()) {
-        // IN[n] = ⋃ OUT[p] for all p ∈ predecessors(n)
-        Set<Variable> newIn = new HashSet<>();
+        Set<Map.Entry<Node, Variable>> in = new HashSet<>();
+
+        // IN[n] = ⋃ OUT[p] for all predecessors
         for (Node pred : cfg.getPredecessors(node)) {
-          newIn.addAll(OUT.getOrDefault(pred, Set.of()));
+          in.addAll(OUT.getOrDefault(pred, Set.of()));
         }
 
         // OUT[n] = (IN[n] - KILL[n]) ∪ GEN[n]
-        Set<Variable> newOut = new HashSet<>(newIn);
-        newOut.removeAll(KILL.getOrDefault(node, Set.of()));
-        newOut.addAll(GEN.getOrDefault(node, Set.of()));
+        Set<Map.Entry<Node, Variable>> out = new HashSet<>();
 
-        if (!newIn.equals(IN.get(node)) || !newOut.equals(OUT.get(node))) {
-          IN.put(node, newIn);
-          OUT.put(node, newOut);
+        Set<Variable> killSet = KILL.getOrDefault(node, Set.of());
+        for (Map.Entry<Node, Variable> entry : in) {
+          if (!killSet.contains(entry.getValue())) {
+            out.add(entry);
+          }
+        }
+
+        for (Variable var : GEN.getOrDefault(node, Set.of())) {
+          out.add(Map.entry(node, var));
+        }
+
+        if (!in.equals(IN.get(node)) || !out.equals(OUT.get(node))) {
+          IN.put(node, in);
+          OUT.put(node, out);
           changed = true;
         }
       }
@@ -140,7 +156,7 @@ public class DataDependenceGraph extends Graph {
   }
 
 
-  private void addDataDependenceEdges(ProgramGraph cfg, ProgramGraph ddg, Map<Node, Set<Variable>> GEN, Map<Node, Set<Variable>> IN) {
+  private void addDataDependenceEdges(ProgramGraph cfg, ProgramGraph ddg, Map<Node, Set<Variable>> GEN, Map<Node, Set<Map.Entry<Node, Variable>>> IN) {
     for (Node useNode : cfg.getNodes()) {
       AbstractInsnNode useInsn = useNode.getInstruction();
       if (useInsn == null) continue;
@@ -152,21 +168,15 @@ public class DataDependenceGraph extends Graph {
             throw new RuntimeException(e);
         }
 
-      Set<Variable> reachingDefs = IN.get(useNode);
+      for (Map.Entry<Node, Variable> defEntry : IN.getOrDefault(useNode, Set.of())) {
+        Node defNode = defEntry.getKey();
+        Variable defVar = defEntry.getValue();
 
-      for (Variable used : usedVars) {
-        for (Node defNode : cfg.getNodes()) {
-          if (defNode.equals(useNode)) continue;
-
-          Set<Variable> defs = GEN.getOrDefault(defNode, Set.of());
-          for (Variable def : defs) {
-            if (reachingDefs.contains(def) && def.equals(used)) {
-              ddg.addEdge(defNode, useNode);
-            }
-          }
-        }
+        if (usedVars.contains(defVar)) {
+          ddg.addEdge(defNode, useNode);
       }
     }
   }
+}
 }
 

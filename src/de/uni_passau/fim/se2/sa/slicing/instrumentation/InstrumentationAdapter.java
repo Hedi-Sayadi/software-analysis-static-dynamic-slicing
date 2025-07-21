@@ -25,7 +25,7 @@ class InstrumentationAdapter extends ClassVisitor {
         visitLdcInsn(pLine);
         visitMethodInsn(
                 INVOKESTATIC,
-                "de/uni_passau/fim/se2/sa/slicing/coverage/CoverageTracker.java",
+                "de/uni_passau/fim/se2/sa/slicing/coverage/CoverageTracker",
                 "trackLineVisit",
                 "(I)V",
                 false

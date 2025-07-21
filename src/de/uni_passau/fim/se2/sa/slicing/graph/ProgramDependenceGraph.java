@@ -2,7 +2,11 @@ package de.uni_passau.fim.se2.sa.slicing.graph;
 
 import de.uni_passau.fim.se2.sa.slicing.cfg.Node;
 import de.uni_passau.fim.se2.sa.slicing.cfg.ProgramGraph;
+
+import java.util.HashSet;
 import java.util.Set;
+import java.util.Stack;
+
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
@@ -67,7 +71,18 @@ public class ProgramDependenceGraph extends Graph implements Sliceable<Node> {
   /** {@inheritDoc} */
   @Override
   public Set<Node> backwardSlice(Node pCriterion) {
-    // TODO Implement me
-    throw new UnsupportedOperationException("Implement me");
-  }
+    Set<Node> result = new HashSet<>();
+    Stack<Node> toProcess = new Stack<>();
+    toProcess.push(pCriterion);
+    while (!toProcess.isEmpty()) {
+      Node node = toProcess.pop();
+      if (!result.contains(node)) {
+        result.add(node);
+        for (Node pred : pdg.getPredecessors(node)) {
+          toProcess.push(pred);
+        }
+      }
+    }
+    return result;
+}
 }

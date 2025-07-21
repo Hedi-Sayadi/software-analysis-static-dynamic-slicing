@@ -160,7 +160,7 @@ public class DataDependenceGraph extends Graph {
 
           Set<Variable> defs = GEN.getOrDefault(defNode, Set.of());
           for (Variable def : defs) {
-            if (reachingDefs.contains(def) && def.equals(used)) {
+            if (reachingDefs.contains(def) && def.type.equals(used.type)) {
               ddg.addEdge(defNode, useNode);
             }
           }

@@ -71,6 +71,9 @@ public class ProgramDependenceGraph extends Graph implements Sliceable<Node> {
   /** {@inheritDoc} */
   @Override
   public Set<Node> backwardSlice(Node pCriterion) {
+    if (pdg == null) {
+      computeResult();
+    }
     Set<Node> result = new HashSet<>();
     Stack<Node> toProcess = new Stack<>();
     toProcess.push(pCriterion);

@@ -21,6 +21,7 @@ class InstrumentationAdapter extends ClassVisitor {
     return new MethodVisitor(api, mv) {
       @Override
       public void visitLineNumber(int pLine, Label pStart) {
+        super.visitLineNumber(pLine, pStart);
         visitLdcInsn(pLine);
         visitMethodInsn(
                 INVOKESTATIC,

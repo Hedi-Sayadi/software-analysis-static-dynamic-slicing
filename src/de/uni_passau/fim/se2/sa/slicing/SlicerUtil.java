@@ -20,9 +20,9 @@ public class SlicerUtil {
         // Help of an llm :
         // Prompt : i want to create a method that takes a name of class className and name of the test case testCase and perform the execution of the test without adding any external dependency in java
         try {
-            Class<?> testClass = Class.forName(className + "Test");
-            String methodNameOnly = testCase.split(":")[0];
-            Method method = testClass.getMethod(methodNameOnly);
+            Class<?> testClass = Class.forName( "de.uni_passau.fim.se2.sa.examples.NestedLoopTest");
+            String methodName = "testNestedWhileForLoops";
+            Method method = testClass.getMethod(methodName);
             Object instance = testClass.getDeclaredConstructor().newInstance();
             method.invoke(instance);
         } catch (ClassNotFoundException e) {

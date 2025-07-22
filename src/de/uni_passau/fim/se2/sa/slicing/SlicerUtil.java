@@ -4,9 +4,14 @@ import de.uni_passau.fim.se2.sa.slicing.cfg.Node;
 import de.uni_passau.fim.se2.sa.slicing.cfg.ProgramGraph;
 import de.uni_passau.fim.se2.sa.slicing.coverage.CoverageTracker;
 import de.uni_passau.fim.se2.sa.slicing.graph.ProgramDependenceGraph;
+import org.junit.platform.launcher.Launcher;
+import org.junit.platform.launcher.LauncherDiscoveryRequest;
+import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
+import org.junit.platform.launcher.core.LauncherFactory;
 
-import java.lang.reflect.Method;
 import java.util.Set;
+
+import static org.junit.platform.engine.discovery.DiscoverySelectors.selectMethod;
 
 public class SlicerUtil {
 
@@ -17,21 +22,13 @@ public class SlicerUtil {
      * @param testCase  The name of the test case to be executed.
      */
     public static void executeTest(String className, String testCase) {
-        // Help of an llm :
-        // Prompt : i want to create a method that takes a name of class className and name of the test case testCase and perform the execution of the test without adding any external dependency in java
-        try {
-            Class<?> testClass = Class.forName( "de.uni_passau.fim.se2.sa.examples.NestedLoopTest");
-            String methodName = "testNestedWhileForLoops";
-            Method method = testClass.getMethod(methodName);
-            Object instance = testClass.getDeclaredConstructor().newInstance();
-            method.invoke(instance);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Class not found: " + className, e);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException("Method not found: " + testCase + " in class " + className, e);
-        } catch (Exception e) {
-            throw new RuntimeException("Error executing test method: " + testCase, e);
-        }
+        LauncherDiscoveryRequest request = LauncherDiscoveryRequestBuilder.request()
+                .selectors(
+                        selectMethod(className + "Test", testCase)
+                )
+                .build();
+        Launcher launcher = LauncherFactory.create();
+        launcher.execute(request);
     }
 
     /**

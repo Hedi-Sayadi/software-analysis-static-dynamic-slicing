@@ -22,8 +22,8 @@ public class SlicerUtil {
         try {
             Class<?> testClass = Class.forName(className);
             Method method = testClass.getMethod(testCase);
-
             Object instance = testClass.getDeclaredConstructor().newInstance();
+            method.setAccessible(true);
             method.invoke(instance);
 
         } catch (ClassNotFoundException e) {
